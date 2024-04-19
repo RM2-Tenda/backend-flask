@@ -17,13 +17,16 @@ class ButtonState(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     state = db.Column(db.Boolean, nullable=False, default=False)
 
-@app.before_first_request
 def create_tables():
     db.create_all()
+    # Ensure a default button state exists
     if ButtonState.query.first() is None:
         initial_state = ButtonState(state=False)
         db.session.add(initial_state)
         db.session.commit()
+
+with app.app_context():
+    create_tables()  # This will execute at application start
 
 @app.route('/api/button', methods=['GET'])
 def button():
