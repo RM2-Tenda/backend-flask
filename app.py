@@ -33,18 +33,19 @@ class ButtonState(db.Model):
 class Command(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     command = db.Column(db.String(255), nullable=False)
-    device_id = db.Column(db.String(50), nullable=False)  # Add device_id to Command
+    device_id = db.Column(db.String(50), nullable=False)
 
 
 class Alarm(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sensor = db.Column(db.String(50), nullable=False)
     condition = db.Column(db.String(50), nullable=False)
+    comparison = db.Column(db.String(50), nullable=False)
     value = db.Column(db.Float, nullable=False)
     days = db.Column(db.String(50), nullable=True)
     start_time = db.Column(db.String(5), nullable=True)
     end_time = db.Column(db.String(5), nullable=True)
-    device_id = db.Column(db.String(50), nullable=False)  # Add device_id to Alarm
+    device_id = db.Column(db.String(50), nullable=False)
 
 
 def create_tables():
