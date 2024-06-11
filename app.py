@@ -40,6 +40,7 @@ class Alarm(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sensor = db.Column(db.String(50), nullable=False)
     condition = db.Column(db.String(50), nullable=False)
+    comparison = db.Column(db.String(50), nullable=False)
     value = db.Column(db.Float, nullable=False)
     days = db.Column(db.String(50), nullable=True)
     start_time = db.Column(db.String(5), nullable=True)
