@@ -33,7 +33,7 @@ class ButtonState(db.Model):
 class Command(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     command = db.Column(db.String(255), nullable=False)
-    device_id = db.Column(db.String(50), nullable=False)  # Add device_id to Command
+    device_id = db.Column(db.String(50), nullable=False)
 
 
 class Alarm(db.Model):
@@ -44,7 +44,7 @@ class Alarm(db.Model):
     days = db.Column(db.String(50), nullable=True)
     start_time = db.Column(db.String(5), nullable=True)
     end_time = db.Column(db.String(5), nullable=True)
-    device_id = db.Column(db.String(50), nullable=False)  # Add device_id to Alarm
+    device_id = db.Column(db.String(50), nullable=False)
 
 
 def create_tables():
@@ -57,7 +57,7 @@ def create_tables():
 
 
 with app.app_context():
-    create_tables()  # This will execute at application start
+    create_tables()
 
 
 @app.route('/api/button', methods=['GET'])
@@ -90,9 +90,9 @@ def post_statistics():
             device_id=data.get('device_id'),
             humidity=data.get('humidity'),
             temperature=data.get('temperature'),
-            presence=data.get('presence'),
+            presence=bool(data.get('presence')),
             gas_value=data.get('gas_value'),
-            gas_detected=data.get('gas_detected'),
+            gas_detected=bool(data.get('gas_detected')),
             uv_value=data.get('uv_value'),
             latitude=data.get('latitude'),
             longitude=data.get('longitude')
@@ -165,10 +165,29 @@ def get_commands():
     if device_id:
         commands = Command.query.filter_by(device_id=device_id).all()
         if commands:
-            latest_command = commands[-1].command
-            return jsonify(command=latest_command)
+            return jsonify(commands=[{
+                'command': command.command,
+                'sensor': command.sensor,
+                'condition': command.condition,
+                'comparison': command.comparison,
+                'value': command.value,
+                'days': command.days,
+                'start_time': command.start_time,
+                'end_time': command.end_time
+            } for command in commands])
         else:
-            return jsonify(command="")
+            return jsonify(commands=[])
+    else:
+        return jsonify(message="No device_id provided"), 400
+
+
+@app.route('/api/commands/clear', methods=['POST'])
+def clear_commands():
+    device_id = request.json.get('device_id')
+    if device_id:
+        Command.query.filter_by(device_id=device_id).delete()
+        db.session.commit()
+        return jsonify(message="Commands cleared successfully"), 200
     else:
         return jsonify(message="No device_id provided"), 400
 
@@ -207,6 +226,17 @@ def get_alarms():
             'start_time': alarm.start_time,
             'end_time': alarm.end_time
         } for alarm in alarms])
+    else:
+        return jsonify(message="No device_id provided"), 400
+
+
+@app.route('/api/alarms/clear', methods=['POST'])
+def clear_alarms():
+    device_id = request.json.get('device_id')
+    if device_id:
+        Alarm.query.filter_by(device_id=device_id).delete()
+        db.session.commit()
+        return jsonify(message="Alarms cleared successfully"), 200
     else:
         return jsonify(message="No device_id provided"), 400
 
