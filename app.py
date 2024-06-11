@@ -215,6 +215,7 @@ def get_alarms():
             'id': alarm.id,
             'sensor': alarm.sensor,
             'condition': alarm.condition,
+            'comparison': alarm.comparison,
             'value': alarm.value,
             'days': alarm.days,
             'start_time': alarm.start_time,
