@@ -33,7 +33,7 @@ class ButtonState(db.Model):
 class Command(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     command = db.Column(db.String(255), nullable=False)
-    device_id = db.Column(db.String(50), nullable=False)
+    device_id = db.Column(db.String(50), nullable=False)  # Add device_id to Command
 
 
 class Alarm(db.Model):
@@ -44,7 +44,7 @@ class Alarm(db.Model):
     days = db.Column(db.String(50), nullable=True)
     start_time = db.Column(db.String(5), nullable=True)
     end_time = db.Column(db.String(5), nullable=True)
-    device_id = db.Column(db.String(50), nullable=False)
+    device_id = db.Column(db.String(50), nullable=False)  # Add device_id to Alarm
 
 
 def create_tables():
@@ -57,7 +57,7 @@ def create_tables():
 
 
 with app.app_context():
-    create_tables()
+    create_tables()  # This will execute at application start
 
 
 @app.route('/api/button', methods=['GET'])
@@ -165,18 +165,10 @@ def get_commands():
     if device_id:
         commands = Command.query.filter_by(device_id=device_id).all()
         if commands:
-            return jsonify(commands=[{
-                'command': command.command,
-                'sensor': command.sensor,
-                'condition': command.condition,
-                'comparison': command.comparison,
-                'value': command.value,
-                'days': command.days,
-                'start_time': command.start_time,
-                'end_time': command.end_time
-            } for command in commands])
+            latest_command = commands[-1].command
+            return jsonify(command=latest_command)
         else:
-            return jsonify(commands=[])
+            return jsonify(command="")
     else:
         return jsonify(message="No device_id provided"), 400
 
@@ -199,6 +191,7 @@ def post_alarm():
         new_alarm = Alarm(
             sensor=data.get('sensor'),
             condition=data.get('condition'),
+            comparison=data.get('comparison'),
             value=data.get('value'),
             days=data.get('days'),
             start_time=data.get('start_time'),
@@ -226,17 +219,6 @@ def get_alarms():
             'start_time': alarm.start_time,
             'end_time': alarm.end_time
         } for alarm in alarms])
-    else:
-        return jsonify(message="No device_id provided"), 400
-
-
-@app.route('/api/alarms/clear', methods=['POST'])
-def clear_alarms():
-    device_id = request.json.get('device_id')
-    if device_id:
-        Alarm.query.filter_by(device_id=device_id).delete()
-        db.session.commit()
-        return jsonify(message="Alarms cleared successfully"), 200
     else:
         return jsonify(message="No device_id provided"), 400
 
