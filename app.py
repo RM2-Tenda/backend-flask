@@ -40,7 +40,6 @@ class Alarm(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sensor = db.Column(db.String(50), nullable=False)
     condition = db.Column(db.String(50), nullable=False)
-    comparison = db.Column(db.String(50), nullable=False)
     value = db.Column(db.Float, nullable=False)
     days = db.Column(db.String(50), nullable=True)
     start_time = db.Column(db.String(5), nullable=True)
@@ -223,6 +222,15 @@ def get_alarms():
     else:
         return jsonify(message="No device_id provided"), 400
 
+@app.route('/api/alarms/clear', methods=['POST'])
+def clear_alarms():
+    device_id = request.json.get('device_id')
+    if device_id:
+        Alarm.query.filter_by(device_id=device_id).delete()
+        db.session.commit()
+        return jsonify(message="Alarms cleared successfully"), 200
+    else:
+        return jsonify(message="No device_id provided"), 400
 
 @app.route('/api/alarms/<int:alarm_id>', methods=['DELETE'])
 def delete_alarm(alarm_id):
