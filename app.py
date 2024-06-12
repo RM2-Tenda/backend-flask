@@ -189,14 +189,18 @@ def clear_commands():
 def post_alarm():
     data = request.json
     if data:
+        days = data.get('days', '').split(',')
+        start_time = data.get('start_time', '00:00')
+        end_time = data.get('end_time', '23:59')
+        
         new_alarm = Alarm(
             sensor=data.get('sensor'),
             condition=data.get('condition'),
             comparison=data.get('comparison'),
             value=data.get('value'),
-            days=data.get('days'),
-            start_time=data.get('start_time'),
-            end_time=data.get('end_time'),
+            days=','.join(days),
+            start_time=start_time,
+            end_time=end_time,
             device_id=data.get('device_id')
         )
         db.session.add(new_alarm)
@@ -215,7 +219,6 @@ def get_alarms():
             'id': alarm.id,
             'sensor': alarm.sensor,
             'condition': alarm.condition,
-            'comparison': alarm.comparison,
             'value': alarm.value,
             'days': alarm.days,
             'start_time': alarm.start_time,
